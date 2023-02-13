@@ -1,5 +1,5 @@
 import { CacheModule, Module } from '@nestjs/common';
-import { DrinkModule } from './drink/drink.module';
+import { RecipeModule } from './recipe/recipe.module';
 
 @Module({
   imports: [
@@ -7,7 +7,7 @@ import { DrinkModule } from './drink/drink.module';
       isGlobal: true,
       ttl: 60000,
     }),
-    DrinkModule,
+    RecipeModule,
   ],
   controllers: [],
   providers: [],

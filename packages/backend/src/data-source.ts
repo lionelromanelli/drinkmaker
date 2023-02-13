@@ -1,6 +1,6 @@
 const config = require('config');
 import { DataSource } from 'typeorm';
-import { DrinkEntity } from './drink/drink.entity';
+import { RecipeEntity } from './recipe/recipe.entity';
 
 export const AppDataSource = new DataSource({
   type: config.get('database.type'),
@@ -11,7 +11,7 @@ export const AppDataSource = new DataSource({
   database: config.get('database.database'),
   synchronize: false,
   logging: true,
-  entities: [DrinkEntity],
+  entities: [RecipeEntity],
   subscribers: [],
   migrations: [],
 });
