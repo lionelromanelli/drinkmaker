@@ -1,9 +1,9 @@
 {
   "database": {
-    "host": "kesavan.db.elephantsql.com",
-    "port": 5432,
-    "user": "dycbarrp",
-    "password": "rWH3FXnK_arGmkdoivJa6UdOlb_O8d31",
-    "database": "dycbarrp"
+    "host": "",
+    "port": 1234,
+    "user": "",
+    "password": "",
+    "database": ""
   }
 }
