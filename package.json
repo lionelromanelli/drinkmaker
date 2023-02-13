@@ -1,0 +1,19 @@
+{
+  "name": "drinkmaker",
+  "version": "1.0.0",
+  "description": "> App to find drinks recipes by name or ingredients",
+  "main": "index.js",
+  "private": "true",
+  "workspaces": {
+    "packages": [
+      "packages/frontend",
+      "packages/backend"
+    ]
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

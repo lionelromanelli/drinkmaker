@@ -4,6 +4,11 @@
   "description": "",
   "author": "",
   "private": true,
+  "workspaces": {
+    "nohoist": [
+      "**"
+    ]
+  },
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",

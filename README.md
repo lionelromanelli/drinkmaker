@@ -1,6 +1,7 @@
 # drinkmaker
 
-> App to find drinks recipes by name or ingredients
+> App to find drinks recipes by name or ingredients.
+> Monorepo
 
 ## Run
 
