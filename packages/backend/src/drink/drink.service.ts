@@ -4,9 +4,9 @@ import { AppDataSource } from '../data-source';
 
 @Injectable()
 export class DrinkService {
-  photoRepository = AppDataSource.getRepository(DrinkEntity);
+  repository = AppDataSource.getRepository(DrinkEntity);
 
   async findAll(): Promise<DrinkEntity[]> {
-    return await this.photoRepository.find();
+    return await this.repository.find();
   }
 }

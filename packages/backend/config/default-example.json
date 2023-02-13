@@ -1,5 +1,6 @@
 {
   "database": {
+    "type": "",
     "host": "",
     "port": 1234,
     "user": "",

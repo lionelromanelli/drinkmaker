@@ -1,4 +1,4 @@
-import { Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { DrinkController } from './drink.controller';
 import { DrinkEntity } from './drink.entity';
 import { DrinkService } from './drink.service';

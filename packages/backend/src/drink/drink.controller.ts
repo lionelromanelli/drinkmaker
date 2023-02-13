@@ -1,10 +1,15 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  CacheInterceptor,
+  Controller,
+  Get,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { DrinkEntity } from './drink.entity';
 import { DrinkService } from './drink.service';
 
-@ApiTags('drinks')
 @Controller('drinks')
+@UseInterceptors(CacheInterceptor)
 export class DrinkController {
   constructor(private readonly drinkService: DrinkService) {}
 

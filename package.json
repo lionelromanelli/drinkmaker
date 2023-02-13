@@ -1,7 +1,7 @@
 {
   "name": "drinkmaker",
   "version": "1.0.0",
-  "description": "> App to find drinks recipes by name or ingredients",
+  "description": "App to find drinks recipes by name or ingredients",
   "main": "index.js",
   "private": "true",
   "workspaces": {
