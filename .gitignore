@@ -1,6 +1,3 @@
-# db config
-/packages/backend/config/default.json
-
 # compiled output
 /dist
 /node_modules
