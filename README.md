@@ -18,3 +18,5 @@ npm start
 cd packages/frontend
 npm start
 ```
+
+ALGO
