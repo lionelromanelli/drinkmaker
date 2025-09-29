@@ -37,7 +37,9 @@ app.post('/api/drinks', async (c) => {
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorText = await response.text()
+      console.error(`Ollama service error: ${response.status} - ${errorText}`)
+      throw new Error(`Ollama service error: ${response.status} - ${errorText}`)
     }
 
     const data = await response.json()
@@ -117,12 +119,25 @@ app.post('/api/drinks', async (c) => {
     return c.json(drinks)
   } catch (error) {
     console.error('Error calling bartender service:', error)
-    return c.json({ error: 'Failed to get drink recommendations' }, 500)
+
+    // Provide more specific error messages for debugging
+    if (error.message.includes('fetch')) {
+      return c.json({
+        error: 'Cannot connect to AI service',
+        details: error.message,
+        ollama_host: OLLAMA_HOST
+      }, 500)
+    }
+
+    return c.json({
+      error: 'Failed to get drink recommendations',
+      details: error.message
+    }, 500)
   }
 })
 
 // Health check endpoint
-app.get('/health', (c) => {
+app.get('/api/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
