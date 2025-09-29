@@ -36,6 +36,7 @@ export default function Home() {
       setDrinks(response.data || [])
     } catch (err) {
       setError('No se pudieron obtener recomendaciones. Intenta nuevamente.')
+      // eslint-disable-next-line no-console
       console.error('Error:', err)
     } finally {
       setLoading(false)
@@ -45,7 +46,12 @@ export default function Home() {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      handleSubmit(e as any)
+      // Trigger form submission directly
+      const form = e.currentTarget.closest('form')
+      if (form) {
+        const event = new Event('submit', { bubbles: true, cancelable: true })
+        form.dispatchEvent(event)
+      }
     }
   }
 
