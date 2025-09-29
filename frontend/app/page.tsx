@@ -32,7 +32,7 @@ export default function Home() {
     try {
       const response = await axios.post(`${API_BASE_URL}/drinks`, {
         ingredients: ingredients.trim(),
-        mock: mock
+        mock
       })
 
       setDrinks(response.data || [])
