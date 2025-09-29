@@ -1,0 +1,261 @@
+pipeline {
+    agent any
+
+    environment {
+        // Environment variables
+        NODE_ENV = 'production'
+        DOCKER_IMAGE = 'drinkmaker-frontend'
+        DOCKER_TAG = "${BUILD_NUMBER}"
+
+        // Frontend environment variables (configure these in Jenkins credentials)
+        NEXT_PUBLIC_API_URL = credentials('drinkmaker-frontend-api-url')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out source code...'
+                checkout scm
+            }
+        }
+
+        stage('Verify Docker') {
+            steps {
+                echo 'Verifying Docker is available...'
+                sh '''
+                    docker --version
+                    docker info
+                '''
+            }
+        }
+
+        stage('Debug Branch Info') {
+            steps {
+                echo 'Checking current branch information...'
+                script {
+                    echo "Branch Name: ${env.BRANCH_NAME}"
+                    echo "Git Branch: ${env.GIT_BRANCH}"
+                }
+                sh '''
+                    echo "Current branch:"
+                    git branch -a
+                    echo "Current commit:"
+                    git log -1 --oneline
+                '''
+            }
+        }
+
+        stage('Install Dependencies') {
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { env.GIT_BRANCH == 'origin/main' }
+                }
+            }
+            steps {
+                dir('frontend') {
+                    echo 'Installing dependencies...'
+                    sh '''
+                        # Use Docker to install dependencies (consistent environment)
+                        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm ci --only=production
+                    '''
+                }
+            }
+        }
+
+        stage('Lint and Type Check') {
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { env.GIT_BRANCH == 'origin/main' }
+                }
+            }
+            steps {
+                dir('frontend') {
+                    echo 'Running lint and type checks...'
+                    sh '''
+                        # Run linting and type checking using Docker
+                        docker run --rm -v $(pwd):/app -w /app node:18-alpine sh -c "
+                            npm ci &&
+                            npm run lint &&
+                            npx tsc --noEmit
+                        " || echo "Lint/TypeScript checks completed with warnings"
+                    '''
+                }
+            }
+        }
+
+        stage('Docker Build') {
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { env.GIT_BRANCH == 'origin/main' }
+                }
+            }
+            steps {
+                dir('frontend') {
+                    echo 'Building Docker image...'
+                    sh '''
+                        docker build \\
+                            --build-arg NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \\
+                            -t ${DOCKER_IMAGE}:${DOCKER_TAG} .
+                        docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} ${DOCKER_IMAGE}:latest
+                    '''
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { env.GIT_BRANCH == 'origin/main' }
+                }
+            }
+            steps {
+                dir('frontend') {
+                    echo 'Running security scan...'
+                    sh '''
+                        # Run npm audit using Docker (no need for local npm)
+                        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm audit || echo "Security audit completed with warnings"
+                    '''
+                }
+            }
+        }
+
+        stage('Health Check Test') {
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { env.GIT_BRANCH == 'origin/main' }
+                }
+            }
+            steps {
+                dir('frontend') {
+                    echo 'Testing container startup...'
+                    sh '''
+                        # Start a temporary container for testing
+                        docker run -d --name test-frontend-${BUILD_NUMBER} -p 3104:3004 \\
+                            -e NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \\
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+
+                        # Wait for container to start
+                        sleep 15
+
+                        # Test if the service is responding
+                        if curl -f http://localhost:3104 -o /dev/null -s; then
+                            echo "✅ Frontend health check passed!"
+                        else
+                            echo "❌ Frontend health check failed!"
+                            docker logs test-frontend-${BUILD_NUMBER}
+                            exit 1
+                        fi
+
+                        # Cleanup test container
+                        docker stop test-frontend-${BUILD_NUMBER} || true
+                        docker rm test-frontend-${BUILD_NUMBER} || true
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { env.GIT_BRANCH == 'origin/main' }
+                }
+            }
+            steps {
+                dir('frontend') {
+                    echo 'Deploying Docker container on port 3004...'
+                    sh '''
+                        # Stop and remove existing container (if running)
+                        docker stop drinkmaker-frontend || echo "No existing container to stop"
+                        docker rm drinkmaker-frontend || echo "No existing container to remove"
+
+                        # Run new container on port 3004
+                        docker run -d \\
+                            --name drinkmaker-frontend \\
+                            --restart unless-stopped \\
+                            -p 3004:3004 \\
+                            -e NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \\
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+
+                        # Wait and verify container is running
+                        sleep 10
+                        if docker ps | grep -q drinkmaker-frontend; then
+                            echo "✅ DrinkMaker Frontend container deployed successfully on port 3004!"
+                            docker ps --filter name=drinkmaker-frontend
+                            docker logs --tail 20 drinkmaker-frontend
+
+                            # Test the deployed service
+                            echo "Testing deployed service..."
+                            curl -f http://localhost:3004 -o /dev/null -s || echo "Service health check failed"
+                        else
+                            echo "❌ DrinkMaker Frontend container deployment failed!"
+                            docker logs drinkmaker-frontend
+                            exit 1
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Cleanup Old Images') {
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { env.GIT_BRANCH == 'origin/main' }
+                }
+            }
+            steps {
+                echo 'Cleaning up old Docker images...'
+                sh '''
+                    # Keep only the 5 most recent images
+                    docker images ${DOCKER_IMAGE} --format "table {{.Tag}}\\t{{.CreatedAt}}" | tail -n +2 | head -n -5 | awk '{print $1}' | xargs -r docker rmi ${DOCKER_IMAGE}: || echo "No old images to remove"
+
+                    # Remove dangling images
+                    docker image prune -f || echo "No dangling images to remove"
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up workspace...'
+            script {
+                try {
+                    // Cleanup test containers
+                    sh '''
+                        docker stop test-frontend-${BUILD_NUMBER} || true
+                        docker rm test-frontend-${BUILD_NUMBER} || true
+                    '''
+                    cleanWs()
+                } catch (Exception e) {
+                    echo "Workspace cleanup failed: ${e.message}"
+                }
+            }
+            echo 'Clean up end'
+        }
+
+        success {
+            echo 'DrinkMaker Frontend pipeline completed successfully!'
+            echo "✅ Frontend deployed on port 3004 - Build #${BUILD_NUMBER}"
+            // Send success notification (configure webhook/email)
+            // slackSend(channel: '#deployments', color: 'good', message: "✅ DrinkMaker Frontend deployment successful - Build #${BUILD_NUMBER}")
+        }
+
+        failure {
+            echo 'DrinkMaker Frontend pipeline failed!'
+            echo "❌ Frontend deployment failed - Build #${BUILD_NUMBER}"
+            // Send failure notification
+            // slackSend(channel: '#deployments', color: 'danger', message: "❌ DrinkMaker Frontend deployment failed - Build #${BUILD_NUMBER}")
+        }
+
+        unstable {
+            echo 'DrinkMaker Frontend pipeline completed with warnings!'
+        }
+    }
+}

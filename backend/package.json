@@ -1,0 +1,14 @@
+{
+  "name": "drinkmaker-backend",
+  "version": "1.0.0",
+  "description": "Backend service for drinkmaker app with Hono + Bun",
+  "main": "server.js",
+  "scripts": {
+    "start": "bun run server.js",
+    "dev": "bun run --watch server.js"
+  },
+  "dependencies": {
+    "hono": "^3.12.0"
+  },
+  "devDependencies": {}
+}
