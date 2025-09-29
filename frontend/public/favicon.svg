@@ -1,0 +1,38 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="martiniGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e8f5e8;stop-opacity:0.9" />
+      <stop offset="50%" style="stop-color:#b8e6b8;stop-opacity:0.7" />
+      <stop offset="100%" style="stop-color:#87ceeb;stop-opacity:0.8" />
+    </linearGradient>
+    <linearGradient id="rimGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#silver;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#darkgray;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Martini glass bowl (triangle shape) -->
+  <path d="M6 6 L26 6 L16 18 Z" fill="url(#martiniGradient)" stroke="url(#rimGradient)" stroke-width="1.5"/>
+
+  <!-- Martini glass stem -->
+  <rect x="15.5" y="18" width="1" height="8" fill="#darkgray"/>
+
+  <!-- Martini glass base -->
+  <ellipse cx="16" cy="26.5" rx="4" ry="0.8" fill="#darkgray"/>
+
+  <!-- Liquid in glass -->
+  <path d="M8 8 L24 8 L16 16 Z" fill="url(#martiniGradient)" opacity="0.8"/>
+
+  <!-- Glass rim highlight -->
+  <line x1="6" y1="6" x2="26" y2="6" stroke="#fff" stroke-width="0.5" opacity="0.6"/>
+
+  <!-- Olive on toothpick -->
+  <circle cx="14" cy="11" r="1.2" fill="#8fbc8f"/>
+  <circle cx="14" cy="11" r="0.3" fill="#556b2f"/>
+
+  <!-- Toothpick -->
+  <line x1="12" y1="9" x2="16" y2="13" stroke="#d4af37" stroke-width="0.4"/>
+
+  <!-- Cocktail glass reflection -->
+  <path d="M7 7 L12 7 L14 12" fill="none" stroke="#fff" stroke-width="0.3" opacity="0.4"/>
+</svg>

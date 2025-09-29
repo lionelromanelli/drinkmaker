@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'DrinkMaker',
   description: 'Create cocktails from ingredients using AI',
+  icons: {
+    icon: '/favicon.svg',
+  },
 }
 
 export default function RootLayout({
