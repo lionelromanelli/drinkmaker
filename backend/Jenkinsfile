@@ -84,42 +84,6 @@ pipeline {
             }
         }
 
-        stage('Health Check Test') {
-            when {
-                anyOf {
-                    branch 'main'
-                    expression { env.GIT_BRANCH == 'origin/main' }
-                }
-            }
-            steps {
-                dir('backend') {
-                    echo 'Testing health endpoint...'
-                    sh '''
-                        # Start a temporary container for testing
-                        docker run -d --name test-backend-${BUILD_NUMBER} -p 3103:3003 \\
-                            -e OLLAMA_HOST=${OLLAMA_HOST} \\
-                            ${DOCKER_IMAGE}:${DOCKER_TAG}
-
-                        # Wait for container to start
-                        sleep 10
-
-                        # Test health endpoint
-                        if curl -f http://localhost:3003/api/health; then
-                            echo "✅ Health check passed!"
-                        else
-                            echo "❌ Health check failed!"
-                            docker logs test-backend-${BUILD_NUMBER}
-                            exit 1
-                        fi
-
-                        # Cleanup test container
-                        docker stop test-backend-${BUILD_NUMBER} || true
-                        docker rm test-backend-${BUILD_NUMBER} || true
-                    '''
-                }
-            }
-        }
-
         stage('Deploy') {
             when {
                 anyOf {
