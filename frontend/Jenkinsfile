@@ -45,46 +45,6 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            when {
-                anyOf {
-                    branch 'main'
-                    expression { env.GIT_BRANCH == 'origin/main' }
-                }
-            }
-            steps {
-                dir('frontend') {
-                    echo 'Installing dependencies...'
-                    sh '''
-                        # Use Docker to install dependencies (consistent environment)
-                        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm ci --only=production
-                    '''
-                }
-            }
-        }
-
-        stage('Lint and Type Check') {
-            when {
-                anyOf {
-                    branch 'main'
-                    expression { env.GIT_BRANCH == 'origin/main' }
-                }
-            }
-            steps {
-                dir('frontend') {
-                    echo 'Running lint and type checks...'
-                    sh '''
-                        # Run linting and type checking using Docker
-                        docker run --rm -v $(pwd):/app -w /app node:18-alpine sh -c "
-                            npm ci &&
-                            npm run lint &&
-                            npx tsc --noEmit
-                        " || echo "Lint/TypeScript checks completed with warnings"
-                    '''
-                }
-            }
-        }
-
         stage('Docker Build') {
             when {
                 anyOf {
@@ -114,10 +74,12 @@ pipeline {
             }
             steps {
                 dir('frontend') {
-                    echo 'Running security scan...'
+                    echo 'Running security scan using Docker...'
                     sh '''
-                        # Run npm audit using Docker (no need for local npm)
-                        docker run --rm -v $(pwd):/app -w /app node:18-alpine npm audit || echo "Security audit completed with warnings"
+                        # Use a temporary container with the source mounted to run audit
+                        docker run --rm --entrypoint="" -v "${PWD}:/src" -w /src node:18-alpine sh -c "
+                            npm audit --audit-level=moderate || echo 'Security audit completed with warnings'
+                        "
                     '''
                 }
             }

@@ -81,7 +81,7 @@ The backend can be configured using environment variables:
 
 ### Frontend Configuration
 
-- `NEXT_PUBLIC_API_URL`: Backend API URL (default: http://localhost:3003)
+- `NEXT_PUBLIC_API_URL`: Backend API URL (default: http://localhost:3003/api)
 
 ## Usage
 

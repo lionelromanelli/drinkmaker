@@ -4,7 +4,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import DrinkCard from '@/components/DrinkCard'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3003/api'
 
 interface Drink {
   nombre: string
@@ -29,7 +29,7 @@ export default function Home() {
     setDrinks([]) // Clear previous results
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/drinks`, {
+      const response = await axios.post(`${API_BASE_URL}/drinks`, {
         ingredients: ingredients.trim()
       })
 
