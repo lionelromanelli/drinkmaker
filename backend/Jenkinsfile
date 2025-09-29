@@ -104,7 +104,7 @@ pipeline {
                         sleep 10
 
                         # Test health endpoint
-                        if curl -f http://localhost:3103/health; then
+                        if curl -f http://localhost:3003/api/health; then
                             echo "✅ Health check passed!"
                         else
                             echo "❌ Health check failed!"
