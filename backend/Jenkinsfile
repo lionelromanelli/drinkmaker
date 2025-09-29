@@ -154,7 +154,7 @@ pipeline {
 
                             # Test the deployed service
                             echo "Testing deployed service..."
-                            curl -f http://localhost:3003/health || echo "Service health check failed"
+                            curl -f http://localhost:3003/api/health || echo "Service health check failed"
                         else
                             echo "❌ DrinkMaker Backend container deployment failed!"
                             docker logs drinkmaker-backend
