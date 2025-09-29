@@ -1,0 +1,76 @@
+repos:
+  # Frontend linting (React/Next.js)
+  - repo: local
+    hooks:
+      - id: frontend-eslint
+        name: Frontend ESLint
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        files: ^frontend/.*\.(js|jsx|ts|tsx)$
+        require_serial: false
+
+      - id: frontend-prettier
+        name: Frontend Prettier
+        entry: bash -c 'cd frontend && npx prettier --write'
+        language: system
+        files: ^frontend/.*\.(js|jsx|ts|tsx|json|css|md)$
+
+      - id: frontend-typescript
+        name: Frontend TypeScript Check
+        entry: bash -c 'cd frontend && npx tsc --noEmit'
+        language: system
+        files: ^frontend/.*\.(ts|tsx)$
+
+  # Backend linting (Hono/Bun)
+  - repo: local
+    hooks:
+      - id: backend-eslint
+        name: Backend ESLint
+        entry: bash -c 'cd backend && bun run lint:fix'
+        language: system
+        files: ^backend/.*\.(js|ts)$
+
+      - id: backend-prettier
+        name: Backend Prettier
+        entry: bash -c 'cd backend && bun run format'
+        language: system
+        files: ^backend/.*\.(js|ts|json|md)$
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-json
+      - id: check-yaml
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # Security audits
+  - repo: local
+    hooks:
+      - id: frontend-audit
+        name: Frontend Security Audit
+        entry: bash -c 'cd frontend && npm audit --audit-level=high'
+        language: system
+        pass_filenames: false
+        files: ^frontend/package.*\.json$
+
+      - id: backend-audit
+        name: Backend Security Audit
+        entry: bash -c 'cd backend && bun audit'
+        language: system
+        pass_filenames: false
+        files: ^backend/package.*\.json$
+
+  # Git hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
