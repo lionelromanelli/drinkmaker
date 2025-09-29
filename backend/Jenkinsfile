@@ -48,42 +48,6 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            when {
-                anyOf {
-                    branch 'main'
-                    expression { env.GIT_BRANCH == 'origin/main' }
-                }
-            }
-            steps {
-                dir('backend') {
-                    echo 'Installing dependencies with Bun...'
-                    sh '''
-                        export PATH="$HOME/.bun/bin:$PATH"
-
-                        # Install required system dependencies
-                        if ! command -v unzip &> /dev/null; then
-                            echo "Installing unzip..."
-                            sudo apt-get update && sudo apt-get install -y unzip
-                        fi
-
-                        # Install Bun if not available
-                        if ! command -v bun &> /dev/null; then
-                            echo "Installing Bun..."
-                            curl -fsSL https://bun.sh/install | bash
-                            export PATH="$HOME/.bun/bin:$PATH"
-                        fi
-
-                        # Verify Bun installation
-                        bun --version
-
-                        # Install dependencies
-                        bun install
-                    '''
-                }
-            }
-        }
-
         stage('Docker Build') {
             when {
                 anyOf {
@@ -111,19 +75,10 @@ pipeline {
             }
             steps {
                 dir('backend') {
-                    echo 'Running security scan...'
+                    echo 'Running security scan using Docker...'
                     sh '''
-                        export PATH="$HOME/.bun/bin:$PATH"
-
-                        # Verify Bun is available
-                        if ! command -v bun &> /dev/null; then
-                            echo "Bun not found in PATH, skipping audit"
-                            exit 0
-                        fi
-
-                        # Run security audit
-                        echo "Running Bun security audit..."
-                        bun audit || echo "Security audit completed with warnings"
+                        # Use the built image to run security audit
+                        docker run --rm --entrypoint bun ${DOCKER_IMAGE}:${DOCKER_TAG} audit || echo "Security audit completed with warnings"
                     '''
                 }
             }
@@ -141,7 +96,9 @@ pipeline {
                     echo 'Testing health endpoint...'
                     sh '''
                         # Start a temporary container for testing
-                        docker run -d --name test-backend-${BUILD_NUMBER} -p 3103:3003 ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        docker run -d --name test-backend-${BUILD_NUMBER} -p 3103:3003 \\
+                            -e OLLAMA_HOST=${OLLAMA_HOST} \\
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
 
                         # Wait for container to start
                         sleep 10
@@ -178,19 +135,14 @@ pipeline {
                         docker stop drinkmaker-backend || echo "No existing container to stop"
                         docker rm drinkmaker-backend || echo "No existing container to remove"
 
-                        # Create environment file for container
-                        cat > .env << EOF
-NODE_ENV=${NODE_ENV}
-PORT=${PORT}
-OLLAMA_HOST=${OLLAMA_HOST}
-EOF
-
                         # Run new container on port 3003
                         docker run -d \\
                             --name drinkmaker-backend \\
                             --restart unless-stopped \\
                             -p 3003:3003 \\
-                            --env-file .env \\
+                            -e NODE_ENV=${NODE_ENV} \\
+                            -e PORT=${PORT} \\
+                            -e OLLAMA_HOST=${OLLAMA_HOST} \\
                             ${DOCKER_IMAGE}:${DOCKER_TAG}
 
                         # Wait and verify container is running
@@ -208,9 +160,6 @@ EOF
                             docker logs drinkmaker-backend
                             exit 1
                         fi
-
-                        # Clean up
-                        rm -f .env
                     '''
                 }
             }
