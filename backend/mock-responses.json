@@ -1,0 +1,50 @@
+[
+  {
+    "nombre": "Sunset",
+    "ingredientes": ["vodka", "jugo de naranja", "hielo", "salsa de limón"],
+    "preparacion": [
+      "Llenar vaso alto con hielo",
+      "Verter 60ml de vodka",
+      "Completar con jugo recién exprimido de naranja y salsa de limón",
+      "Mezclar bien, decorar con rodaja de naranja"
+    ]
+  },
+  {
+    "nombre": "Vodka Spritz",
+    "ingredientes": ["vodka", "jugo de naranja", "prosecco", "hielo"],
+    "preparacion": [
+      "Llenar vaso alto con hielo",
+      "Verter vodka y jugo de naranja",
+      "Agregar prosecco al final, mezclar suavemente"
+    ]
+  },
+  {
+    "nombre": "Vodka Collins",
+    "ingredientes": ["vodka", "jugo de naranja", "leche de huevo", "hielo"],
+    "preparacion": [
+      "Llenar vaso con hielo",
+      "Verter vodka y jugo recién exprimido de naranja",
+      "Añadir leche de huevo, mezclar suavemente"
+    ]
+  },
+  {
+    "nombre": "Orange Breeze",
+    "ingredientes": ["vodka", "jugo de naranja", "agua tónica", "hielo", "menta"],
+    "preparacion": [
+      "Llenar vaso con hielo",
+      "Agregar 50ml de vodka",
+      "Verter jugo de naranja y completar con agua tónica",
+      "Decorar con hojas de menta fresca"
+    ]
+  },
+  {
+    "nombre": "Citrus Fizz",
+    "ingredientes": ["vodka", "jugo de naranja", "jugo de limón", "agua mineral", "hielo"],
+    "preparacion": [
+      "Mezclar vodka con jugos de naranja y limón",
+      "Servir sobre hielo",
+      "Completar con agua mineral",
+      "Revolver suavemente y servir"
+    ]
+  }
+]

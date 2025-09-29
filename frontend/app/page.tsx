@@ -18,6 +18,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [hasSearched, setHasSearched] = useState(false)
+  const [mock] = useState(true)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -30,7 +31,8 @@ export default function Home() {
 
     try {
       const response = await axios.post(`${API_BASE_URL}/drinks`, {
-        ingredients: ingredients.trim()
+        ingredients: ingredients.trim(),
+        mock: mock
       })
 
       setDrinks(response.data || [])
@@ -158,7 +160,7 @@ export default function Home() {
       {/* Footer */}
       <div className="text-center pb-8">
         <p className="text-xs text-gray-400">
-          Powered by AI llama3.2 model
+          {mock ? 'Respuesta generada por mock' : 'Powered by AI llama3.2 model'}
         </p>
       </div>
     </div>

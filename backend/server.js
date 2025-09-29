@@ -1,5 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import fs from 'fs'
+import path from 'path'
 
 const app = new Hono()
 const PORT = process.env.PORT || 3003
@@ -7,18 +9,37 @@ const PORT = process.env.PORT || 3003
 // Configurable host for the external service
 const OLLAMA_HOST = process.env.OLLAMA_HOST || 'http://localhost:11434'
 
+// Load mock responses
+const mockResponsesPath = path.join(process.cwd(), 'mock-responses.json')
+let mockResponses = []
+try {
+  const mockData = fs.readFileSync(mockResponsesPath, 'utf8')
+  mockResponses = JSON.parse(mockData)
+} catch (error) {
+  console.warn('Could not load mock responses:', error.message)
+}
+
 // Enable CORS
 app.use('/*', cors())
 
 app.post('/api/drinks', async (c) => {
   try {
     const body = await c.req.json()
-    const { ingredients } = body
+    const { ingredients, mock } = body
 
-    console.log(`Request POST /api/drinks with ${ingredients}`)
+    console.log(`Request POST /api/drinks with ${ingredients}, mock: ${mock}`)
 
     if (!ingredients) {
       return c.json({ error: 'Ingredients are required' }, 400)
+    }
+
+    // If mock is true, return mock responses
+    if (mock && mockResponses.length > 0) {
+      console.log('Returning mock responses')
+      // Return 3 random mock responses
+      const shuffled = [...mockResponses].sort(() => 0.5 - Math.random())
+      const selectedMocks = shuffled.slice(0, 3)
+      return c.json(selectedMocks)
     }
 
     const prompt = "Dame 3 posibilidades con los siguientes ingredientes:"
